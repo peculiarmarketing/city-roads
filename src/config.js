@@ -10,6 +10,9 @@ export default {
   // So, using S3
   areaServer: 'https://d2uf7yjjctyxf.cloudfront.net/nov-02-2020',
 
+  // Peculiar People: towns saved by city-maps/fetch_map.py, served by vite.config.js.
+  localDataServer: 'local-data',
+
   getDefaultLineColor() {
     return tinycolor('rgba(26, 26, 26, 0.8)');
   },

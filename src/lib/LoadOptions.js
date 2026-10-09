@@ -52,8 +52,9 @@ export default class LoadOptions {
     */
     this.projector = undefined;
     this.wayFilter = undefined;
-    this.timeout = 900;
-    this.maxHeapByteSize = 1073741824;
+    // Peculiar People: was 900 s and a 1 GB maxsize. Overpass refuses reservations that
+    // big when it is busy (504 "server is probably too busy"), so small towns failed.
+    this.timeout = 180;
     this.outputMethod = 'skel'; // body
     Object.assign(this, overrides);
   }
@@ -74,14 +75,14 @@ export default class LoadOptions {
       .then(bounds => {
         let queryString;
         if (bounds.areaId) {
-          queryString = `[timeout:${this.timeout}][maxsize:${this.maxHeapByteSize}][out:json];
+          queryString = `[timeout:${this.timeout}][out:json];
 area(${bounds.areaId});
 (._; )->.area;
 (${this.wayFilter}(area.area); node(w););
 out ${this.outputMethod};`;
         } else if (bounds.bbox) {
           let bbox = serializeBBox(bounds.bbox);
-          queryString = `[timeout:${this.timeout}][maxsize:${this.maxHeapByteSize}][bbox:${bbox}][out:json];
+          queryString = `[timeout:${this.timeout}][bbox:${bbox}][out:json];
 (${this.wayFilter}; node(w););
 out ${this.outputMethod};`;
         }

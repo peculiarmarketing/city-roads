@@ -208,6 +208,18 @@ export default {
     pickSuggestion(suggestion) {
       this.lastSuggestion = suggestion;
       this.error = false;
+      if (suggestion.areaId) {
+        this.checkLocalData(suggestion)
+          .catch(error => {
+            if (error.cancelled) return;
+            return this.pickRemote(suggestion);
+          });
+      } else {
+        this.pickRemote(suggestion);
+      }
+    },
+
+    pickRemote(suggestion) {
       if (appState.isCacheEnabled() && suggestion.areaId) {
         this.checkCache(suggestion)
           .catch(error => {
@@ -228,6 +240,22 @@ export default {
       this.notifyStillLoading = setInterval(() => {
         this.stillLoading++;
       }, 10000);
+    },
+
+    checkLocalData(suggestion) {
+      this.loading = 'Checking saved towns...'
+      return request(config.localDataServer + '/' + suggestion.areaId + '-roads.json', {
+        progress: this.generateNewProgressToken(),
+        responseType: 'json'
+      }).then(osmResponse => {
+        this.loading = null;
+        let grid = Grid.fromOSMResponse(osmResponse.elements);
+        grid.setName(suggestion.name);
+        grid.setId(suggestion.areaId);
+        grid.setIsArea(suggestion.areaId);
+        grid.setBBox(serializeBBox(suggestion.bbox));
+        this.$emit('loaded', grid);
+      });
     },
 
     checkCache(suggestion) {
